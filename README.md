@@ -1,4 +1,4 @@
-# subtle [![](https://img.shields.io/crates/v/subtle.svg)](https://crates.io/crates/subtle) [![](https://img.shields.io/badge/dynamic/json.svg?label=docs&uri=https%3A%2F%2Fcrates.io%2Fapi%2Fv1%2Fcrates%2Fsubtle%2Fversions&query=%24.versions%5B0%5D.num&colorB=4F74A6)](https://doc.dalek.rs/subtle) [![](https://travis-ci.org/dalek-cryptography/subtle.svg?branch=master)](https://travis-ci.org/dalek-cryptography/subtle)
+# subtle-ng
 
 **Pure-Rust traits and utilities for constant-time cryptographic implementations.**
 
@@ -7,7 +7,7 @@ instead of `bool` which are intended to execute in constant-time.  The `Choice`
 type is a wrapper around a `u8` that holds a `0` or `1`.
 
 ```toml
-subtle = "2.4"
+subtle-ng = "2.4"
 ```
 
 This crate represents a “best-effort” attempt, since side-channels
@@ -42,7 +42,8 @@ Documentation is available [here][docs].
 
 Rust **1.41** or higher.
 
-Minimum supported Rust version can be changed in the future, but it will be done with a minor version bump.
+Minimum supported Rust version can be changed in the future, but it will be
+done with a minor version bump.
 
 ## About
 
@@ -65,5 +66,5 @@ effort is fundamentally limited.
 
 **USE AT YOUR OWN RISK**
 
-[docs]: https://docs.rs/subtle
+[docs]: https://docs.rs/subtle-ng
 [rust-timing-shield]: https://www.chosenplaintext.ca/open-source/rust-timing-shield/security

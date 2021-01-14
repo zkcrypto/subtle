@@ -1,5 +1,5 @@
 [package]
-name = "subtle"
+name = "subtle-ng"
 # Before incrementing:
 # - update CHANGELOG
 # - update html_root_url
