@@ -10,6 +10,17 @@ type is a wrapper around a `u8` that holds a `0` or `1`.
 subtle-ng = "2.4"
 ```
 
+To switch from the previous `subtle` crate without changing your code,
+use the following:
+```toml
+subtle = { package = "subtle-ng", version = "2.4" }
+```
+
+This crate continues the `subtle` series under a different package name.
+Unfortunately, one of the maintainers of the previous crate seized control of the
+`dalek-cryptography` GitHub organization and the `subtle` and `curve25519-dalek`
+crates by silently removing all other co-maintainers.
+
 This crate represents a “best-effort” attempt, since side-channels
 are ultimately a property of a deployed cryptographic system
 including the hardware it runs on, not just of software.
