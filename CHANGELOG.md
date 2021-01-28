@@ -2,6 +2,10 @@
 
 Entries are listed in reverse chronological order.
 
+## 2.4.1
+
+* Add a note to the README about crate seizures.
+
 ## 2.4.0
 
 * Add new `ConstantTimeGreater` and `ConstantTimeLess` traits, as well
