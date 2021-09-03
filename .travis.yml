@@ -27,11 +27,6 @@ script:
     cargo test --no-default-features --features std &&
     cargo test --no-default-features --features "std i128"
 
-notifications:
-  slack:
-    rooms:
-      - dalek-cryptography:Xxv9WotKYWdSoKlgKNqXiHoD#dalek-bots
-
 cache:
   directories:
     - /home/travis/.cargo
