@@ -1,10 +1,10 @@
 extern crate rand;
-extern crate subtle;
+extern crate subtle_ng;
 
 use rand::rngs::OsRng;
 use rand::RngCore;
 
-use subtle::*;
+use subtle_ng::*;
 
 #[test]
 #[should_panic]

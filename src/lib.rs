@@ -9,8 +9,7 @@
 // - Henry de Valence <hdevalence@hdevalence.ca>
 
 #![no_std]
-#![cfg_attr(feature = "nightly", feature(external_doc))]
-#![cfg_attr(feature = "nightly", doc(include = "../README.md"))]
+#![doc = include_str!("../README.md")]
 #![cfg_attr(feature = "nightly", deny(missing_docs))]
 #![doc(html_root_url = "https://docs.rs/subtle-ng/2.4.1")]
 
@@ -178,7 +177,7 @@ impl From<u8> for Choice {
 /// # Example
 ///
 /// ```
-/// use subtle::ConstantTimeEq;
+/// use subtle_ng::ConstantTimeEq;
 /// let x: u8 = 5;
 /// let y: u8 = 13;
 ///
@@ -194,7 +193,6 @@ pub trait ConstantTimeEq {
     ///
     /// * `Choice(1u8)` if `self == other`;
     /// * `Choice(0u8)` if `self != other`.
-    #[inline]
     fn ct_eq(&self, other: &Self) -> Choice;
 }
 
@@ -210,7 +208,7 @@ impl<T: ConstantTimeEq> ConstantTimeEq for [T] {
     /// Since arrays coerce to slices, this function works with fixed-size arrays:
     ///
     /// ```
-    /// # use subtle::ConstantTimeEq;
+    /// # use subtle_ng::ConstantTimeEq;
     /// #
     /// let a: [u8; 8] = [0,1,2,3,4,5,6,7];
     /// let b: [u8; 8] = [0,1,2,3,0,1,2,3];
@@ -304,8 +302,7 @@ pub trait ConditionallySelectable: Copy {
     /// # Example
     ///
     /// ```
-    /// # extern crate subtle;
-    /// use subtle::ConditionallySelectable;
+    /// use subtle_ng::ConditionallySelectable;
     /// #
     /// # fn main() {
     /// let x: u8 = 13;
@@ -317,7 +314,6 @@ pub trait ConditionallySelectable: Copy {
     /// assert_eq!(z, y);
     /// # }
     /// ```
-    #[inline]
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self;
 
     /// Conditionally assign `other` to `self`, according to `choice`.
@@ -327,8 +323,7 @@ pub trait ConditionallySelectable: Copy {
     /// # Example
     ///
     /// ```
-    /// # extern crate subtle;
-    /// use subtle::ConditionallySelectable;
+    /// use subtle_ng::ConditionallySelectable;
     /// #
     /// # fn main() {
     /// let mut x: u8 = 13;
@@ -353,8 +348,7 @@ pub trait ConditionallySelectable: Copy {
     /// # Example
     ///
     /// ```
-    /// # extern crate subtle;
-    /// use subtle::ConditionallySelectable;
+    /// use subtle_ng::ConditionallySelectable;
     /// #
     /// # fn main() {
     /// let mut x: u8 = 13;
@@ -467,7 +461,6 @@ pub trait ConditionallyNegatable {
     /// unchanged.
     ///
     /// This function should execute in constant time.
-    #[inline]
     fn conditional_negate(&mut self, choice: Choice);
 }
 
@@ -685,8 +678,7 @@ pub trait ConstantTimeGreater {
     /// # Example
     ///
     /// ```
-    /// # extern crate subtle;
-    /// use subtle::ConstantTimeGreater;
+    /// use subtle_ng::ConstantTimeGreater;
     ///
     /// let x: u8 = 13;
     /// let y: u8 = 42;
@@ -769,8 +761,7 @@ pub trait ConstantTimeLess: ConstantTimeEq + ConstantTimeGreater {
     /// # Example
     ///
     /// ```
-    /// # extern crate subtle;
-    /// use subtle::ConstantTimeLess;
+    /// use subtle_ng::ConstantTimeLess;
     ///
     /// let x: u8 = 13;
     /// let y: u8 = 42;
