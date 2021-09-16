@@ -10,11 +10,9 @@
 
 #![no_std]
 #![doc = include_str!("../README.md")]
-#![cfg_attr(feature = "nightly", deny(missing_docs))]
-#![doc(html_root_url = "https://docs.rs/subtle-ng/2.4.1")]
+#![deny(missing_docs)]
+#![doc(html_root_url = "https://docs.rs/subtle-ng/2.5.0")]
 
-//! Note that docs will only build on nightly Rust until
-//! [RFC 1990 stabilizes](https://github.com/rust-lang/rust/issues/44732).
 
 #[cfg(feature = "std")]
 #[macro_use]

@@ -2,6 +2,12 @@
 
 Entries are listed in reverse chronological order.
 
+## 2.5.0
+
+* Update to new stable `#![doc = include_str!]`, by @delta1. This fixes
+  a compile issue caused by the use of the older `#![doc(include(...))]`
+  syntax.  This also bumps the MSRV to 1.54.
+
 ## 2.4.1
 
 * Add a note to the README about crate seizures.

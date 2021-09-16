@@ -7,7 +7,7 @@ instead of `bool` which are intended to execute in constant-time.  The `Choice`
 type is a wrapper around a `u8` that holds a `0` or `1`.
 
 ```toml
-subtle-ng = "2.4"
+subtle-ng = "2.5"
 ```
 
 To switch from the previous `subtle` crate without changing your code,
