@@ -13,7 +13,6 @@
 #![deny(missing_docs)]
 #![doc(html_root_url = "https://docs.rs/subtle-ng/2.5.0")]
 
-
 #[cfg(feature = "std")]
 #[macro_use]
 extern crate std;
@@ -728,7 +727,7 @@ macro_rules! generate_unsigned_integer_greater {
                 Choice::from((bit & 1) as u8)
             }
         }
-    }
+    };
 }
 
 generate_unsigned_integer_greater!(u8, 8);
