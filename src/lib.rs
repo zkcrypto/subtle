@@ -1,7 +1,7 @@
 // -*- mode: rust; -*-
 //
 // This file is part of subtle, part of the dalek cryptography project.
-// Copyright (c) 2016-2018 isis lovecruft, Henry de Valence
+// Copyright (c) 2016-2022 isis lovecruft, Henry de Valence
 // See LICENSE for licensing information.
 //
 // Authors:
@@ -12,7 +12,6 @@
 #![doc = include_str!("../README.md")]
 #![deny(missing_docs)]
 #![doc(html_root_url = "https://docs.rs/subtle-ng/2.5.0")]
-
 
 #[cfg(feature = "std")]
 #[macro_use]
@@ -728,7 +727,7 @@ macro_rules! generate_unsigned_integer_greater {
                 Choice::from((bit & 1) as u8)
             }
         }
-    }
+    };
 }
 
 generate_unsigned_integer_greater!(u8, 8);
