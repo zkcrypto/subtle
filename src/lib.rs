@@ -20,6 +20,7 @@ extern crate std;
 #[cfg(test)]
 extern crate rand;
 
+use core::cmp::Ordering;
 use core::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Neg, Not};
 use core::option::Option;
 
@@ -780,21 +781,30 @@ impl<T: ConstantTimeGreater + ConstantTimeEq> ConstantTimeGreater for [T] {
     fn ct_gt(&self, _rhs: &[T]) -> Choice {
         let len = self.len();
 
-        // Short-circuit on the *lengths* of the slices, not their
-        // contents.
-        if len < _rhs.len() {
-            return Choice::from(0);
-        }
-        if len > _rhs.len() {
-            return Choice::from(1);
+        // Short-circuit on the *lengths* of the slices, not their contents. Here we apply shortlex
+        // ordering, sorting shorter slices before longer ones.
+        match len.cmp(&_rhs.len()) {
+            Ordering::Equal => (),
+            Ordering::Less => {
+                return Choice::from(0);
+            }
+            Ordering::Greater => {
+                return Choice::from(1);
+            }
         }
 
+        // Whether all the pairs of elements from both slices have been equal for all
+        // previous iterations.
+        let mut still_at_least_eq: u8 = 1u8;
+        // Whether `self` is indeed greater than `other`.
+        let mut was_gt: u8 = 0u8;
         // This loop shouldn't be shortcircuitable, since the compiler
         // shouldn't be able to reason about the value of the `u8`
         // unwrapped from the `ct_eq` and `ct_gt` results.
-        let mut still_at_least_eq: u8 = 1u8;
-        let mut was_gt: u8 = 0u8;
         for (ai, bi) in self.iter().zip(_rhs.iter()) {
+            // If all the elements have been the same so far, check whether the next one is
+            // greater. If so, then `self` is indeed greater, and using |= will ensure if `was_gt`
+            // was ever set to 1, that it remains 1 after iterating through the rest.
             was_gt |= still_at_least_eq & ai.ct_gt(bi).unwrap_u8();
             still_at_least_eq &= ai.ct_eq(bi).unwrap_u8();
         }
