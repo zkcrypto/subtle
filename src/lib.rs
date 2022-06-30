@@ -703,7 +703,7 @@ macro_rules! generate_unsigned_integer_greater {
             ///
             /// # Note
             ///
-            /// This algoritm would also work for signed integers if we first
+            /// This algorithm would also work for signed integers if we first
             /// flip the top bit, e.g. `let x: u8 = x ^ 0x80`, etc.
             #[inline]
             fn ct_gt(&self, other: &$t_u) -> Choice {
