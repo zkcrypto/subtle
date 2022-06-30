@@ -184,7 +184,12 @@ impl From<u8> for Choice {
 pub trait ConstantTimeEq {
     /// Determine if two items are equal.
     ///
-    /// The `ct_eq` function should execute in constant time.
+    /// The `ct_eq` function should execute in constant time. When collections of elements which may
+    /// have different lengths must be compared, a strategy such as [shortlex] may be used to avoid
+    /// leaking timing info based on the contents of the collection. This is how
+    /// `ConstantTimeEq` is implemented for slices.
+    ///
+    /// [shortlex]: https://en.wikipedia.org/wiki/Shortlex_order
     ///
     /// # Returns
     ///
@@ -198,9 +203,12 @@ impl<T: ConstantTimeEq> ConstantTimeEq for [T] {
     ///
     /// # Note
     ///
-    /// This function short-circuits if the lengths of the input slices
-    /// are different.  Otherwise, it should execute in time independent
-    /// of the slice contents.
+    /// This function short-circuits if the lengths of the input slices are different.  Otherwise,
+    /// it should execute in time independent of the slice contents.  When the slice lengths differ,
+    /// this implementation applies the [shortlex] ordering scheme, which sorts shorter slices
+    /// before longer slices without checking the contents.
+    ///
+    /// [shortlex]: https://en.wikipedia.org/wiki/Shortlex_order
     ///
     /// Since arrays coerce to slices, this function works with fixed-size arrays:
     ///
@@ -665,7 +673,12 @@ pub trait ConstantTimeGreater {
     /// The bitwise-NOT of the return value of this function should be usable to
     /// determine if `self <= other`.
     ///
-    /// This function should execute in constant time.
+    /// This function should execute in constant time. When collections of elements which may have
+    /// different lengths must be compared, a strategy such as [shortlex] may be used to avoid
+    /// leaking timing info based on the contents of the collection. This is how
+    /// `ConstantTimeGreater` is implemented for slices.
+    ///
+    /// [shortlex]: https://en.wikipedia.org/wiki/Shortlex_order
     ///
     /// # Returns
     ///
@@ -737,6 +750,59 @@ generate_unsigned_integer_greater!(u64, 64);
 #[cfg(feature = "i128")]
 generate_unsigned_integer_greater!(u128, 128);
 
+impl<T: ConstantTimeGreater + ConstantTimeEq> ConstantTimeGreater for [T] {
+    /// Compare whether one slice of `ConstantTimeGreater` types is greater than another.
+    ///
+    /// # Note
+    ///
+    /// This function short-circuits if the lengths of the input slices are different.  Otherwise,
+    /// it should execute in time independent of the slice contents.  When the slice lengths differ,
+    /// this implementation applies the [shortlex] ordering scheme, which sorts shorter slices
+    /// before longer slices without checking the contents.
+    ///
+    /// [shortlex]: https://en.wikipedia.org/wiki/Shortlex_order
+    ///
+    /// Since arrays coerce to slices, this function also works with fixed-size arrays:
+    ///
+    /// ```
+    /// # use subtle_ng::ConstantTimeGreater;
+    /// #
+    /// let a: [u8; 8] = [0,1,2,3,4,5,6,7];
+    /// let b: [u8; 8] = [0,1,2,3,0,1,2,3];
+    ///
+    /// let a_gt_a = a.ct_gt(&a);
+    /// let a_gt_b = a.ct_gt(&b);
+    ///
+    /// assert_eq!(a_gt_a.unwrap_u8(), 0);
+    /// assert_eq!(a_gt_b.unwrap_u8(), 1);
+    /// ```
+    #[inline]
+    fn ct_gt(&self, _rhs: &[T]) -> Choice {
+        let len = self.len();
+
+        // Short-circuit on the *lengths* of the slices, not their
+        // contents.
+        if len < _rhs.len() {
+            return Choice::from(0);
+        }
+        if len > _rhs.len() {
+            return Choice::from(1);
+        }
+
+        // This loop shouldn't be shortcircuitable, since the compiler
+        // shouldn't be able to reason about the value of the `u8`
+        // unwrapped from the `ct_eq` and `ct_gt` results.
+        let mut still_at_least_eq: u8 = 1u8;
+        let mut was_gt: u8 = 0u8;
+        for (ai, bi) in self.iter().zip(_rhs.iter()) {
+            was_gt |= still_at_least_eq & ai.ct_gt(bi).unwrap_u8();
+            still_at_least_eq &= ai.ct_eq(bi).unwrap_u8();
+        }
+
+        was_gt.into()
+    }
+}
+
 /// A type which can be compared in some manner and be determined to be less
 /// than another of the same type.
 pub trait ConstantTimeLess {
@@ -748,7 +814,12 @@ pub trait ConstantTimeLess {
     /// A default implementation is provided and implemented for the unsigned
     /// integer types.
     ///
-    /// This function should execute in constant time.
+    /// This function should execute in constant time. When collections of elements which may have
+    /// different lengths must be compared, a strategy such as [shortlex] may be used to avoid
+    /// leaking timing info based on the contents of the collection. This is how `ConstantTimeLess`
+    /// is implemented for slices.
+    ///
+    /// [shortlex]: https://en.wikipedia.org/wiki/Shortlex_order
     ///
     /// # Returns
     ///
@@ -787,4 +858,3 @@ impl<T: ConstantTimeGreater + ConstantTimeEq> ConstantTimeLess for T {
         !self.ct_gt(other) & !self.ct_eq(other)
     }
 }
-
