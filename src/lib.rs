@@ -20,6 +20,7 @@ extern crate std;
 #[cfg(test)]
 extern crate rand;
 
+use core::cmp::Ordering;
 use core::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Neg, Not};
 use core::option::Option;
 
@@ -787,3 +788,51 @@ impl ConstantTimeLess for u32 {}
 impl ConstantTimeLess for u64 {}
 #[cfg(feature = "i128")]
 impl ConstantTimeLess for u128 {}
+
+/// A `Cmp`-like trait for constant-time comparisons.
+///
+/// This trait is automatically implemented for types implementing both `ConstantTimeEq` and
+/// `ConstantTimeGreater`, and makes it easy to implement [`core::cmp::Ord`] for types which can be
+/// compared in constant time.
+///
+/// # Example
+///
+/// ```
+/// use std::cmp::Ordering;
+/// use subtle_ng::ConstantTimeCmp;
+/// let x: u8 = 5;
+/// let y: u8 = 13;
+///
+/// assert_eq!(x.ct_cmp(&x), Ordering::Equal);
+/// assert_eq!(x.ct_cmp(&y), Ordering::Less);
+/// assert_eq!(y.ct_cmp(&x), Ordering::Greater);
+/// ```
+pub trait ConstantTimeCmp {
+    /// Determine if two items are equal, less, or greater than one another.
+    ///
+    /// The `ct_cmp` function should execute in constant time. A default implementation is provided
+    /// for implementers of both `ConstantTimeEq` and `ConstantTimeGreater`.
+    fn ct_cmp(&self, other: &Self) -> Ordering;
+}
+
+impl<T: ConstantTimeEq + ConstantTimeGreater> ConstantTimeCmp for T {
+    /// Default implementation for whether `self <=> other`.
+    ///
+    /// This implementation should execute in constant time.
+    fn ct_cmp(&self, other: &Self) -> Ordering {
+        // The compiler should be forced to run *both* of these constant-time checks in order to get
+        // a value for `combined_result` through the `.unwrap_u8()` calls.
+        let is_eq = self.ct_eq(other);
+        let is_gt = self.ct_gt(other);
+
+        // If `ConstantTime{Eq,Greater}` are implemented correctly, *at most one* of "equal" or
+        // "greater" will be true, and if neither are true, then the result must be "less".
+        let combined_result: u8 = is_eq.unwrap_u8() * 2 + is_gt.unwrap_u8();
+        match combined_result {
+            2 => Ordering::Equal,
+            1 => Ordering::Greater,
+            0 => Ordering::Less,
+            x => unreachable!(".unwrap_u8() should never produce a value above 1: {}", x),
+        }
+    }
+}
