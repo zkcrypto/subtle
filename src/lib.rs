@@ -739,7 +739,7 @@ generate_unsigned_integer_greater!(u128, 128);
 
 /// A type which can be compared in some manner and be determined to be less
 /// than another of the same type.
-pub trait ConstantTimeLess: ConstantTimeEq + ConstantTimeGreater {
+pub trait ConstantTimeLess {
     /// Determine whether `self < other`.
     ///
     /// The bitwise-NOT of the return value of this function should be usable to
@@ -775,15 +775,16 @@ pub trait ConstantTimeLess: ConstantTimeEq + ConstantTimeGreater {
     ///
     /// assert_eq!(x_lt_x.unwrap_u8(), 0);
     /// ```
+    fn ct_lt(&self, other: &Self) -> Choice;
+}
+
+impl<T: ConstantTimeGreater + ConstantTimeEq> ConstantTimeLess for T {
+    /// Default implementation for whether `self < other`.
+    ///
+    /// This function should execute in constant time.
     #[inline]
     fn ct_lt(&self, other: &Self) -> Choice {
         !self.ct_gt(other) & !self.ct_eq(other)
     }
 }
 
-impl ConstantTimeLess for u8 {}
-impl ConstantTimeLess for u16 {}
-impl ConstantTimeLess for u32 {}
-impl ConstantTimeLess for u64 {}
-#[cfg(feature = "i128")]
-impl ConstantTimeLess for u128 {}
