@@ -185,12 +185,7 @@ impl From<u8> for Choice {
 pub trait ConstantTimeEq {
     /// Determine if two items are equal.
     ///
-    /// The `ct_eq` function should execute in constant time. When collections of elements which may
-    /// have different lengths must be compared, a strategy such as [shortlex] may be used to avoid
-    /// leaking timing info based on the contents of the collection. This is how
-    /// `ConstantTimeEq` is implemented for slices.
-    ///
-    /// [shortlex]: https://en.wikipedia.org/wiki/Shortlex_order
+    /// The `ct_eq` function should execute in constant time.
     ///
     /// # Returns
     ///
@@ -674,12 +669,7 @@ pub trait ConstantTimeGreater {
     /// The bitwise-NOT of the return value of this function should be usable to
     /// determine if `self <= other`.
     ///
-    /// This function should execute in constant time. When collections of elements which may have
-    /// different lengths must be compared, a strategy such as [shortlex] may be used to avoid
-    /// leaking timing info based on the contents of the collection. This is how
-    /// `ConstantTimeGreater` is implemented for slices.
-    ///
-    /// [shortlex]: https://en.wikipedia.org/wiki/Shortlex_order
+    /// This function should execute in constant time.
     ///
     /// # Returns
     ///
@@ -815,21 +805,13 @@ impl<T: ConstantTimeGreater + ConstantTimeEq> ConstantTimeGreater for [T] {
 
 /// A type which can be compared in some manner and be determined to be less
 /// than another of the same type.
+///
+/// This trait is automatically implemented for implementors of
+/// `ConstantTimeGreater+ConstantTimeEq`.
 pub trait ConstantTimeLess {
     /// Determine whether `self < other`.
     ///
-    /// The bitwise-NOT of the return value of this function should be usable to
-    /// determine if `self >= other`.
-    ///
-    /// A default implementation is provided and implemented for the unsigned
-    /// integer types.
-    ///
-    /// This function should execute in constant time. When collections of elements which may have
-    /// different lengths must be compared, a strategy such as [shortlex] may be used to avoid
-    /// leaking timing info based on the contents of the collection. This is how `ConstantTimeLess`
-    /// is implemented for slices.
-    ///
-    /// [shortlex]: https://en.wikipedia.org/wiki/Shortlex_order
+    /// This function should execute in constant time.
     ///
     /// # Returns
     ///
