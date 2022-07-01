@@ -818,6 +818,18 @@ pub trait ConstantTimePartialOrd {
     fn ct_partial_cmp(&self, other: &Self) -> CtOption<Ordering>;
 }
 
+impl ConstantTimeEq for Ordering {
+    /// Use our `#[repr(i8)]` to get a `ct_eq()` implementation without relying on any `match`es.
+    ///
+    /// This also means `CtOption<Ordering>` implements `ConstantTimeEq`.
+    #[inline]
+    fn ct_eq(&self, other: &Self) -> Choice {
+        let a = *self as i8;
+        let b = *other as i8;
+        a.ct_eq(&b)
+    }
+}
+
 /// Select among `N + 1` results given `N` logical values, of which at most one should be true.
 ///
 /// This method requires a whole set of logical checks to be performed before evaluating their
