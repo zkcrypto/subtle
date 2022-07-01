@@ -175,7 +175,7 @@ impl From<u8> for Choice {
     }
 }
 
-/// An `Eq`-like trait that produces a `Choice` instead of a `bool`.
+/// An [`Eq`]-like trait that produces a `Choice` instead of a `bool`.
 ///
 /// # Example
 ///
@@ -822,7 +822,20 @@ pub trait ConstantTimePartialOrd {
 ///
 /// This method requires a whole set of logical checks to be performed before evaluating their
 /// result, and uses a lookup table to avoid branching in a `match` expression.
-fn index_mutually_exclusive_logical_results<T, const N: usize>(
+///
+///```
+/// use subtle_ng::index_mutually_exclusive_logical_results;
+///
+/// let r = [0xA, 0xB, 0xC];
+///
+/// let a = index_mutually_exclusive_logical_results(&r, [0.into(), 0.into()]);
+/// assert_eq!(*a, 0xA);
+/// let b = index_mutually_exclusive_logical_results(&r, [1.into(), 0.into()]);
+/// assert_eq!(*b, 0xB);
+/// let c = index_mutually_exclusive_logical_results(&r, [0.into(), 1.into()]);
+/// assert_eq!(*c, 0xC);
+///```
+pub fn index_mutually_exclusive_logical_results<T, const N: usize>(
     results: &[T],
     logicals: [Choice; N],
 ) -> &T {
