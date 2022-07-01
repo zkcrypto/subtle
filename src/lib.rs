@@ -819,14 +819,14 @@ pub trait ConstantTimeGreater {
 ///```
 pub struct IteratedGreater {
     was_gt: u8,
-    still_equal: u8,
+    was_lt: u8,
 }
 
 impl IteratedOperation for IteratedGreater {
     fn initiate() -> Self {
         Self {
             was_gt: 0u8,
-            still_equal: 1u8,
+            was_lt: 0u8,
         }
     }
     fn extract_result(self) -> Choice {
@@ -835,18 +835,15 @@ impl IteratedOperation for IteratedGreater {
 }
 
 impl IteratedGreater {
-    /// Unconditionally modify internal state with result of "equals" and "greater" comparisons.
-    pub fn apply_gt<T: ConstantTimeGreater + ConstantTimeEq + ?Sized>(&mut self, a: &T, b: &T) {
-        let Self {
-            was_gt,
-            still_equal,
-        } = self;
-        *was_gt |= *still_equal & a.ct_gt(&b).unwrap_u8();
-        *still_equal &= a.ct_eq(&b).unwrap_u8();
+    /// Unconditionally modify internal state with result of two directed "greater" comparisons.
+    pub fn apply_gt<T: ConstantTimeGreater + ?Sized>(&mut self, a: &T, b: &T) {
+        let Self { was_gt, was_lt } = self;
+        *was_gt |= (!*was_lt) & a.ct_gt(&b).unwrap_u8();
+        *was_lt |= b.ct_gt(&a).unwrap_u8();
     }
 }
 
-impl<T: ConstantTimeGreater + ConstantTimeEq, C: Convertible<To = T>> ConstantTimeGreater for C {
+impl<T: ConstantTimeGreater, C: Convertible<To = T>> ConstantTimeGreater for C {
     fn ct_gt(&self, other: &Self) -> Choice {
         let a: T = self.for_constant_operation();
         let b: T = other.for_constant_operation();
@@ -886,6 +883,8 @@ macro_rules! generate_unsigned_integer_greater {
                 Choice::from((bit & 1) as u8)
             }
         }
+
+        impl ConstantTimeLess for $t_u {}
     };
 }
 
@@ -960,7 +959,7 @@ impl<T: ConstantTimeGreater + ConstantTimeEq> ConstantTimeGreater for [T] {
 ///
 /// This trait is automatically implemented for implementors of
 /// `ConstantTimeGreater+ConstantTimeEq`.
-pub trait ConstantTimeLess {
+pub trait ConstantTimeLess: ConstantTimeGreater {
     /// Determine whether `self < other`.
     ///
     /// This function should execute in constant time.
@@ -990,15 +989,85 @@ pub trait ConstantTimeLess {
     ///
     /// assert_eq!(x_lt_x.unwrap_u8(), 0);
     /// ```
-    fn ct_lt(&self, other: &Self) -> Choice;
+    fn ct_lt(&self, other: &Self) -> Choice {
+        other.ct_gt(self)
+    }
 }
 
-impl<T: ConstantTimeGreater + ConstantTimeEq> ConstantTimeLess for T {
-    /// Default implementation for whether `self < other`.
-    ///
-    /// This function should execute in constant time.
-    #[inline]
+/// Get the result of applying [`ConstantTimeGreater::ct_gt`] over multiple possibly-heterogenous
+/// pairs of elements. The "greater than" comparison assumes that the order of these pairs
+/// is lexicographic.
+///
+///```
+/// use subtle_ng::{
+///   Choice, IteratedOperation, ConstantTimeEq, IteratedEq, ConstantTimeGreater, IteratedGreater,
+///   ConstantTimeLess, IteratedLess,
+/// };
+///
+/// struct S { pub len: usize, pub live: bool };
+/// impl ConstantTimeEq for S {
+///   fn ct_eq(&self, other: &Self) -> Choice {
+///     let mut x = IteratedEq::initiate();
+///     x.apply_eq(&self.len, &other.len);
+///     x.apply_eq(&(self.live as u8), &(other.live as u8));
+///     x.extract_result()
+///   }
+/// }
+/// impl ConstantTimeGreater for S {
+///   fn ct_gt(&self, other: &Self) -> Choice {
+///     let mut x = IteratedGreater::initiate();
+///     x.apply_gt(&(self.len as u64), &(other.len as u64));
+///     x.apply_gt(&(self.live as u8), &(other.live as u8));
+///     x.extract_result()
+///   }
+/// }
+/// impl ConstantTimeLess for S {
+///   fn ct_lt(&self, other: &Self) -> Choice {
+///     let mut x = IteratedLess::initiate();
+///     x.apply_lt(&(self.len as u64), &(other.len as u64));
+///     x.apply_lt(&(self.live as u8), &(other.live as u8));
+///     x.extract_result()
+///   }
+/// }
+///
+/// let s1 = S { len: 2, live: true };
+/// let s2 = S { len: 3, live: false };
+/// let s3 = S { len: 3, live: true };
+/// assert_eq!(0, s1.ct_eq(&s2).unwrap_u8());
+/// assert_eq!(1, s1.ct_eq(&s1).unwrap_u8());
+/// assert_eq!(1, s2.ct_gt(&s1).unwrap_u8());
+/// assert_eq!(1, s2.ct_lt(&s3).unwrap_u8());
+///```
+pub struct IteratedLess {
+    was_lt: u8,
+    was_gt: u8,
+}
+
+impl IteratedOperation for IteratedLess {
+    fn initiate() -> Self {
+        Self {
+            was_lt: 0u8,
+            was_gt: 0u8,
+        }
+    }
+    fn extract_result(self) -> Choice {
+        self.was_lt.into()
+    }
+}
+
+impl IteratedLess {
+    /// Unconditionally modify internal state with result of two directed "less" comparisons.
+    pub fn apply_lt<T: ConstantTimeLess + ?Sized>(&mut self, a: &T, b: &T) {
+        let Self { was_lt, was_gt } = self;
+        *was_lt |= (!*was_gt) & a.ct_lt(&b).unwrap_u8();
+        *was_gt |= b.ct_lt(&a).unwrap_u8();
+    }
+}
+
+impl<T: ConstantTimeLess, C: Convertible<To = T>> ConstantTimeLess for C {
     fn ct_lt(&self, other: &Self) -> Choice {
-        !self.ct_gt(other) & !self.ct_eq(other)
+        let a: T = self.for_constant_operation();
+        let b: T = other.for_constant_operation();
+        a.ct_lt(&b)
     }
 }
