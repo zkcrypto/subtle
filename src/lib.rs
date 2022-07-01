@@ -880,8 +880,8 @@ impl<T: ConstantTimeGreater + ConstantTimeLess + ConstantTimeEq> ConstantTimePar
 
 /// An [`Ord`][core::cmp::Ord]-like trait for constant-time comparisons.
 ///
-/// This trait is automatically implemented for types supporting the "equals" and
-/// "greater" comparisons.
+/// This trait can be automatically implemented for types supporting the "equals" and "greater"
+/// comparisons.
 ///
 /// # Example
 ///
@@ -895,16 +895,18 @@ impl<T: ConstantTimeGreater + ConstantTimeLess + ConstantTimeEq> ConstantTimePar
 /// assert_eq!(x.ct_cmp(&y), Ordering::Less);
 /// assert_eq!(y.ct_cmp(&x), Ordering::Greater);
 /// ```
-pub trait ConstantTimeOrd {
+pub trait ConstantTimeOrd: ConstantTimeEq + ConstantTimeGreater {
     /// This method returns an ordering between `self` and other`.
     ///
+    /// Although this method should never need to be overridden, it is exposed as a default method
+    /// here to force types to explicitly implement this trait. This ensures that types which are
+    /// only partially orderable do not pick up an incorrect `ConstantTimeOrd` impl just by
+    /// implementing the pairwise comparison operations.
+    ///
+    /// Here we assume a total ordering for `T`, so we need to check only "equal" and "greater", and
+    /// can assume "less" if both `ct_eq()` and `ct_gt()` are false.
+    ///
     /// This method should execute in constant time.
-    fn ct_cmp(&self, other: &Self) -> Ordering;
-}
-
-impl<T: ConstantTimeEq + ConstantTimeGreater> ConstantTimeOrd for T {
-    /// We assume a total ordering for `T`, so we need to check only "equal" and "greater", and can
-    /// assume "less" if both `ct_eq()` and `ct_gt()` are false.
     fn ct_cmp(&self, other: &Self) -> Ordering {
         let is_gt = self.ct_gt(other);
         let is_eq = self.ct_eq(other);
@@ -913,3 +915,10 @@ impl<T: ConstantTimeEq + ConstantTimeGreater> ConstantTimeOrd for T {
         *index_mutually_exclusive_logical_results(&ORDERS, [is_gt, is_eq])
     }
 }
+
+impl ConstantTimeOrd for u8 {}
+impl ConstantTimeOrd for u16 {}
+impl ConstantTimeOrd for u32 {}
+impl ConstantTimeOrd for u64 {}
+#[cfg(feature = "i128")]
+impl ConstantTimeOrd for u128 {}
