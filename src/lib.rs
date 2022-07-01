@@ -856,7 +856,7 @@ impl<T: ConstantTimeGreater + ConstantTimeLess + ConstantTimeEq> ConstantTimePar
         let is_lt = self.ct_lt(other);
         let is_gt = self.ct_gt(other);
 
-        const PARTIAL_ORDERS: [CtOption<Ordering>; 4] = [
+        static PARTIAL_ORDERS: [CtOption<Ordering>; 4] = [
             CtOption {
                 value: Ordering::Equal,
                 is_some: Choice::of_bool(false),
@@ -909,7 +909,7 @@ impl<T: ConstantTimeEq + ConstantTimeGreater> ConstantTimeOrd for T {
         let is_gt = self.ct_gt(other);
         let is_eq = self.ct_eq(other);
 
-        const ORDERS: [Ordering; 3] = [Ordering::Less, Ordering::Greater, Ordering::Equal];
+        static ORDERS: [Ordering; 3] = [Ordering::Less, Ordering::Greater, Ordering::Equal];
         *index_mutually_exclusive_logical_results(&ORDERS, [is_gt, is_eq])
     }
 }
