@@ -27,11 +27,6 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-      - name: nightly
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --features nightly
       - name: no-default-features
         uses: actions-rs/cargo@v1
         with:
