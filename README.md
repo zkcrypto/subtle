@@ -1,5 +1,10 @@
 # subtle-ng
 
+[![crates.io](https://img.shields.io/crates/v/subtle-ng.svg)](https://crates.io/crates/subtle-ng)
+[![Released API docs](https://docs.rs/subtle-ng/badge.svg)](https://docs.rs/subtle-ng)
+[![BSD 3-Clause licensed](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](./LICENSE)
+[![CI](https://github.com/zkcrypto/subtle-ng/workflows/Test/badge.svg)](https://github.com/zkcrypto/subtle-ng/actions?query=workflow%3ATest)
+
 **Pure-Rust traits and utilities for constant-time cryptographic implementations.**
 
 It consists of a `Choice` type, and a collection of traits using `Choice`
