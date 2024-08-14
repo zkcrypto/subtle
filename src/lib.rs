@@ -23,9 +23,6 @@ extern crate rand;
 use core::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Neg, Not};
 use core::option::Option;
 
-#[cfg(feature = "core_hint_black_box")]
-use core::hint::black_box;
-
 /// The `Choice` struct represents a choice for use in conditional assignment.
 ///
 /// It is a wrapper around a `u8`, which should have the value either `1` (true)
